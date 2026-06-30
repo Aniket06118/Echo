@@ -18,7 +18,6 @@ def scrap_url(url: str)-> str:
     result = extract(downloaded)
     return result
 
-search_wrapper = GoogleSerperAPIWrapper()
-search_tool = GoogleSerperRun(api_wrapper=search_wrapper)
+search_tool = GoogleSerperRun(api_wrapper=GoogleSerperAPIWrapper())
 
 my_tools=[search_tool , scrap_url ]
