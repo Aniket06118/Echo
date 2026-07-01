@@ -11,8 +11,12 @@ load_dotenv(override=True)
 @tool
 def scrap_url(url: str)-> str:
     """
-    Extract the main textual content from a webpage.
-    Use this after obtaining a URL from a search result when you need the full article or page content.
+    Fetches and extracts the full text content of a webpage given its URL.
+    Use this whenever you need the actual content of a specific page —
+    e.g. a search result snippet isn't enough, or a link found on an
+    already-scraped page looks relevant. Only call this on URLs that
+    actually appeared in search results or prior tool output — never
+    invent a URL.
     """
     downloaded = fetch_url(url)
     result = extract(downloaded)
