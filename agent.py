@@ -1,5 +1,9 @@
 from langchain.agents import create_agent
 from echo_tools import my_tools
+from langchain.agents.middleware import TodoListMiddleware
+from langchain.agents.middleware import ModelCallLimitMiddleware
+from langchain.agents.middleware import ToolCallLimitMiddleware
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
 SYSTEM_PROMPT="""You are a seasoned researcher.
 
@@ -15,7 +19,12 @@ Workflow:
 Prioritize recency for anything news/sports related — check dates in search 
 results and prefer the most current information."""
 
+gpt=ChatNVIDIA(model='openai/gpt-oss-20b')
 
-agent=create_agent(model="google_genai:gemini-2.5-flash-lite",tools=my_tools,system_prompt=SYSTEM_PROMPT)
-response=agent.invoke({'messages':[{'role':'user','content':'what are the latest updates in indin cricket'}]})
-print(response['messages'][-1])
+agent=create_agent(model=gpt,
+                   tools=my_tools,
+                   system_prompt=SYSTEM_PROMPT,
+                   middleware=[TodoListMiddleware(),ToolCallLimitMiddleware(tool_name="search_tool",thread_limit=5,run_limit=4,
+        )])
+agent.invoke({'messages':[{'role':'user','content':'give me a summary of the fifa worldcup 2026 so far. write the answer to a response.md file'}]})
+print("-------------------------------DONEEEEE!!!!------------------------------------")

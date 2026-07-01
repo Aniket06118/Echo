@@ -4,9 +4,11 @@ from trafilatura import fetch_url, extract
 from langchain_core.tools import tool
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from pathlib import Path
+from langchain_tavily import TavilySearch
 
 load_dotenv(override=True)
-
+OUTPUT_DIR = Path("output")
 
 @tool
 def scrap_url(url: str)-> str:
@@ -22,6 +24,18 @@ def scrap_url(url: str)-> str:
     result = extract(downloaded)
     return result
 
-search_tool = GoogleSerperRun(api_wrapper=GoogleSerperAPIWrapper())
+search_tool = TavilySearch(max_results=5,topic="general")
 
-my_tools=[search_tool , scrap_url ]
+
+@tool
+def write_file(filename: str, content: str):
+    """Write content to a file."""
+
+    path = OUTPUT_DIR / filename
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    return f"Saved to {filename}"
+
+my_tools=[search_tool , scrap_url , write_file ]
