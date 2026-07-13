@@ -13,54 +13,13 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from echo_tools import write_file
 from langchain_core.messages import ToolMessage
-
-# ---------------------------------------------------------------------------
-# 1. The only tool this agent has
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# 2. System prompt
-# ---------------------------------------------------------------------------
-
-SYSTEM_PROMPT = """You are the Intake Agent for Echo, a project-memory system.
-
-Your job: turn a user's project idea into a structured, step-based roadmap
-(Step 1, Step 2, ...), through conversation, then save it — but only once
-the user has explicitly approved it.
-
-FLOW
-1. The user describes their idea first. Read it carefully.
-2. Decide if you have enough information to draft a real roadmap. If not,
-   ask focused follow-up questions — one at a time — until you do. Do not
-   move to a draft while scope, goal, or done-criteria are still vague.
-3. Once you have enough, write a draft roadmap as Step 1, Step 2, Step 3...
-   Each step needs a short title and a concrete, checkable description of
-   what "done" looks like — not vague ("build backend") but specific
-   ("API returns user data from /users endpoint with auth working").
-4. Show the full draft to the user and ask directly: "Does this look right,
-   or should we adjust something?"
-5. If the user gives feedback, revise the ENTIRE draft (not just the
-   changed part) and show it again. Repeat until the user clearly approves
-   (e.g. "looks good", "approved", "yes save it"). A plain "ok" or "sure" is
-   NOT approval — if it's unclear, ask directly whether to save it as final.
-6. Only after explicit approval, call write_file with the complete,
-   approved roadmap as `content`. Never call it before approval, and never
-   call it with anything other than the exact version the user approved.
-7. After writing, confirm briefly in one sentence. Do not repeat the full
-   roadmap again — the user already saw it.
-
-STYLE
-Be direct and efficient. One question per turn. No filler.
-"""
-
-# ---------------------------------------------------------------------------
-# 3. Build the agent — HITL sits on write_file only
-# ---------------------------------------------------------------------------
+from prompts import CONVERSATIONAL_AGENT_SYSTEM_PROMPT
 
 checkpointer = InMemorySaver()  # required: HITL pauses/resumes via checkpointing
 
 agent = create_agent(
-    model="google_genai:gemini-2.5-flash-lite",
-    system_prompt=SYSTEM_PROMPT,
+    model="google_genai:gemini-3.1-flash-lite",
+    system_prompt=CONVERSATIONAL_AGENT_SYSTEM_PROMPT,
     tools=[write_file],
     middleware=[
         HumanInTheLoopMiddleware(
