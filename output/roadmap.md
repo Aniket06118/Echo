@@ -1,36 +1,36 @@
-### AI Research Assistant Implementation Roadmap
+# Image Style Transformation Pipeline - Implementation Roadmap
 
-**Step 1: Application scaffolding and State definition**
-Define the shared state schema for the LangGraph workflow and set up the base Streamlit UI to accept user queries.
-* Define the `AgentState` object to persist the research question, search results, synthesized notes, and final report.
-* Initialize the Streamlit app with a text input field and a display area for the report.
-* Implement basic configuration management for Tavily/Serper and OpenAI/LLM API keys.
+### 1. Project Scaffolding and UI Interface
+This step establishes the project structure and the web-based interface for user interaction.
+* Define a modular `app.py` script (using Streamlit or Gradio) and a `config/` directory for model parameters.
+* Implement file upload widgets and toggle controls for the three pipeline stages (Colorize, Upscale, Style).
+* Create a basic logger to track the progress of the chain within the UI.
 
-**Step 2: Search and Data Retrieval Module**
-Implement the search agent node that interacts with the Tavily/Serper API to gather raw data.
-* Create a LangGraph node that converts the research question into targeted search queries.
-* Implement the API client logic to execute searches and retrieve snippets/content.
-* Add a simple filtering mechanism to clean and truncate the retrieved raw text.
+### 2. Base Image Processing Utility
+This establishes the standard input/output handling (OpenCV/PIL) that all models will consume.
+* Create a `processor.py` module to handle image loading, color-space conversion (e.g., BGR to RGB), and normalization.
+* Implement a helper function to save intermediate outputs to a `temp/` directory to allow for debugging of individual pipeline stages.
 
-**Step 3: Synthesis and Conflict Detection Logic**
-Develop the core "researcher" logic that processes search results and identifies contradictions.
-* Implement an LLM-based processing node that summarizes content from multiple sources.
-* Implement a secondary LLM verification step specifically prompted to compare sources and flag factual discrepancies.
-* Ensure the output format is structured (e.g., Markdown) with clear sections for "Key Findings" and "Identified Discrepancies."
+### 3. Stage 1: Colorization Inference Module
+This step integrates the colorization model.
+* Select a pre-trained colorization model (e.g., DeOldify or a pre-trained U-Net/GAN variant).
+* Implement a `Colorizer` class that loads the weights into the GPU/CPU and exposes a `run(image)` method.
+* Verify that the model correctly outputs 3-channel color tensors from grayscale inputs.
 
-**Step 4: Report Generation and Citation Handler**
-Build the final output formatter that aggregates synthesized content into a user-facing report.
-* Implement logic to map search result metadata (URLs/source names) to the synthesized content for accurate citations.
-* Format the final output for the Streamlit UI, ensuring it renders Markdown clearly.
-* Verify that the "Discrepancies" section is logically separated from the primary report.
+### 4. Stage 2: Super-Resolution Inference Module
+This step scales the image while maintaining feature integrity.
+* Select a pre-trained Super-Resolution model (e.g., SwinIR or Real-ESRGAN).
+* Implement an `Upscaler` class that manages model inference and ensures output dimensions match expectations.
+* Ensure the class handles memory-efficient inference (e.g., tile-based processing if necessary).
 
-**Step 5: Interactive Follow-up Loop**
-Enable the ability to perform follow-up research based on the initial report.
-* Update the `AgentState` to maintain the history of the current research session.
-* Modify the LangGraph entry point to allow the user to send "follow-up" prompts that refine the existing research or explore new sub-topics.
-* Ensure the UI correctly appends follow-up answers to the existing session view.
+### 5. Stage 3: Style Transfer Inference Module
+This step applies the stylistic transformation as the final pass.
+* Select a pre-trained style transfer model (e.g., a Stable Diffusion-based Img2Img pipeline or a dedicated Style Transfer network).
+* Implement a `Stylizer` class that loads the relevant weights and applies the style based on a configurable prompt or reference style.
+* Verify that the final output retains the spatial information from the previous stages.
 
-**Step 6: Persistence and Error Handling**
-Add basic robustness to the application.
-* Implement basic error handling for API timeouts or empty search results.
-* Add a local session cache or simple JSON storage to allow users to save or export their generated reports.
+### 6. Pipeline Orchestration and Memory Management
+This ensures the app runs smoothly without causing memory overflow during processing.
+* Implement an `Orchestrator` class to handle the sequential execution of the three stages in response to a UI trigger.
+* Implement a "clean-up" mechanism to unload model weights from VRAM between stages (using `torch.cuda.empty_cache()` and deleting model objects).
+* Final verification: run a full sequence (Color -> Upscale -> Style) via the UI and confirm the end-to-end output.

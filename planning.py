@@ -29,7 +29,7 @@ agent = create_agent(
             description_prefix="Ready to save the final roadmap",
         ),
     ],
-    checkpointer=checkpointer,
+    
 )
 
 # ---------------------------------------------------------------------------

@@ -17,6 +17,7 @@ dependencies = [
     "langchain-openrouter>=0.2.4",
     "langchain-tavily>=0.2.18",
     "langgraph>=1.2.6",
+    "langgraph-cli[inem,inmem]>=0.4.31",
     "nest-asyncio>=1.6.0",
     "playwright>=1.60.0",
     "python-dotenv>=1.2.2",
