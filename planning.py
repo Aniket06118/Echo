@@ -11,9 +11,28 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import HumanInTheLoopMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
-from echo_tools import write_file
 from langchain_core.messages import ToolMessage
+from langchain_core.tools import tool
+from pathlib import Path
 from prompts import CONVERSATIONAL_AGENT_SYSTEM_PROMPT
+from dotenv import load_dotenv
+
+
+load_dotenv(override=True)
+#--------------------------------------------------------
+OUTPUT_DIR = Path("output")
+
+@tool
+def write_file(filename: str, content: str):
+    """Write content to a file."""
+
+    path = OUTPUT_DIR / filename
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    return f"Saved to {filename}"
+#---------------------------------------------------------------
 
 checkpointer = InMemorySaver()  # required: HITL pauses/resumes via checkpointing
 
